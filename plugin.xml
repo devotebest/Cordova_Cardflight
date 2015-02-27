@@ -51,7 +51,7 @@
           </js-module>
           
         <config-file target="config.xml" parent="/*">
-            <feature name="CDVCardFlight">
+            <feature name="CardFlightPlugin">
                 <param name="ios-package" value="CDVCardFlight"/>
             </feature>
         </config-file>

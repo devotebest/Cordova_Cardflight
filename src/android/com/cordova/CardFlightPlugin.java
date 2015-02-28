@@ -22,6 +22,10 @@ import com.getcardflight.models.Charge;
 import com.getcardflight.models.Reader;
 import com.getcardflight.views.PaymentView;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.HashMap;
+
 
 public class CardFlightPlugin extends CordovaPlugin implements Events.Required {
     
@@ -30,7 +34,37 @@ public class CardFlightPlugin extends CordovaPlugin implements Events.Required {
     @SuppressWarnings("unused")
 	private CallbackContext callbackContext;
     private CallbackContext List_callbackContext;
+
+    public static final String API_TOKEN = "YOUR_API_TOKEN";
+    public static final String ACCOUNT_TOKEN = "YOUR_ACCOUNT_TOKEN";
+
+    public string api_token;
+    public string account_token;
     
+
+    private Context mContext;
+
+    private boolean readerIsConnected;
+    private boolean readerFailed;
+    private boolean swipedCard;
+
+
+    private Reader reader = null;
+    private Card mCard = null;
+    private Charge mCharge = null;
+    private OnCardKeyedListener onCardKeyedListener;
+    private OnFieldResetListener onFieldResetListener;
+    private PaymentView mFieldHolder;
+
+
+    /**
+    * Gets the application context from cordova's main activity.
+    * @return the application context
+    */
+    private Context getApplicationContext() {
+        return this.cordova.getActivity().getApplicationContext();
+    }
+
     // Debugging
     private static final String TAG = "HandPoint";
     private static final boolean D = true;
@@ -63,14 +97,20 @@ public class CardFlightPlugin extends CordovaPlugin implements Events.Required {
     	 this.callbackContext = callbackContext;
          
          boolean retValue = true;
-         if (action.equals("init")) {
+
+        if (action.equals("init")) {
              //Initialize  API
-        	 initApi(appContext, callbackContext); 
+             initApi(appContext, callbackContext); 
+             retValue = true;
+             
+         }else  if (action.equals("setApiTokens")) {
+             //Set API Tokens
+        	 setApiTokens(args, callbackContext); 
         	 retValue = true;
         	 
-         } else if (action.equals("pay")) {
+         } else if (action.equals("swipecard")) {
         	 //Pay
-        	 pay(args, callbackContext);
+        	 swipe(args, callbackContext);
         	 retValue = true;
         	 
          } else if (action.equals("connect")) {
@@ -108,20 +148,150 @@ public class CardFlightPlugin extends CordovaPlugin implements Events.Required {
          return retValue;
     }
 
-    public void initApi(Context context, CallbackContext callbackContext){
-      
-        this.api = HapiFactory.getAsyncInterface(this, context).defaultSharedSecret(sharedSecret_key);
-      //Register a listener for required events
-        this.api.addRequiredEventHandler(this);
-        
-        //The api is now initialized. Yay! we've even set a default shared secret!
-        //But we need to connect to a device to start taking payments.
-        //Let's search for them:
-        this.api.listDevices(ConnectionMethod.BLUETOOTH);
-        
+    //Set API Tokens;
+    public void setApiTokens(JSONArray args, CallbackContext callbackContext) throws JSONException {      
+        JSONObject obj = args.optJSONObject(0);
+        String api_token = obj.optString("API_TOKEN");
+        String account_token = obj.optString("ACCOUNT_TOKEN");
+
+        this.api_token = api_token;
+        this.account_token = account_token;
         //This triggers the search, you should expect the results in the listener defined above
         callbackContext.success();
     }
+
+    //swipe card
+    public void swipecard(JSONArray args, CallbackContext callbackContext) throws JSONException {      
+        JSONObject obj = args.optJSONObject(0);
+        String api_token = obj.optString("API_TOKEN");
+        String account_token = obj.optString("ACCOUNT_TOKEN");
+
+        this.api_token = api_token;
+        this.account_token = account_token;
+        //This triggers the search, you should expect the results in the listener defined above
+        callbackContext.success();
+    }
+
+
+    public void initApi(Context context, CallbackContext callbackContext){
+      
+        // Instantiate CardFlight Instance
+        CardFlight.getInstance().setApiTokenAndAccountToken(this.api_token, this.account_token);
+        CardFlight.getInstance().setLogging(true);
+        
+
+        // Create a new Reader object with AutoConfig handler
+        reader = new Reader(getApplicationContext(), new CardFlightDeviceHandler() {
+
+            @Override
+            public void readerIsConnecting() {
+                Toast.makeText(getApplicationContext(),
+                        "Device connecting", Toast.LENGTH_SHORT).show();
+
+            }
+
+            @Override
+            public void readerIsAttached() {
+                readerFailed = false;
+                Toast.makeText(getApplicationContext(),
+                        "Device connected", Toast.LENGTH_SHORT).show();
+
+                readerConnected();
+            }
+
+            @Override
+            public void readerIsDisconnected() {
+                // TODO Auto-generated method stub
+                Toast.makeText(getApplicationContext(),
+                        "Device disconnected", Toast.LENGTH_SHORT)
+                        .show();
+
+                readerDisconnected();
+            }
+
+            @Override
+            public void deviceBeginSwipe() {
+                // TODO Auto-generated method stub
+                Toast.makeText(getApplicationContext(),
+                        "Device begin swipe", Toast.LENGTH_SHORT)
+                        .show();
+
+            }
+
+            @Override
+            public void readerCardResponse(Card card) {
+                // TODO Auto-generated method stub
+
+                Toast.makeText(getApplicationContext(),
+                        "Device swipe completed", Toast.LENGTH_SHORT)
+                        .show();
+
+                mCard = card;
+
+                fillFieldsWithData(card);
+            }
+
+            @Override
+            public void deviceSwipeFailed() {
+                readerFailed = true;
+                Toast.makeText(getApplicationContext(),
+                        "Device swipe failed", Toast.LENGTH_SHORT)
+                        .show();
+
+            }
+
+            @Override
+            public void deviceSwipeTimeout() {
+                readerFailed = true;
+                Toast.makeText(getApplicationContext(),
+                        "Device swipe time out", Toast.LENGTH_SHORT)
+                        .show();
+
+            }
+
+            @Override
+            public void deviceNotSupported() {
+                readerFailed = true;
+                Toast.makeText(getApplicationContext(),
+                        "Device not supported", Toast.LENGTH_SHORT)
+                        .show();
+
+                enableAutoconfigButton();
+            }
+
+            @Override
+            public void readerTimeout() {
+                readerFailed = true;
+                Toast.makeText(getApplicationContext(),
+                        "Reader has timed out", Toast.LENGTH_SHORT)
+                        .show();
+
+                enableAutoconfigButton();
+            }
+
+        }, new CardFlightAutoConfigHandler() {
+            @Override
+            public void autoConfigProgressUpdate(int i) {
+                Log.i(TAG, "AutoConfig progress %" + i);
+                readerStatus.setText("AutoConfig Progress %" + i);
+            }
+
+            @Override
+            public void autoConfigFinished() {
+                Log.i(TAG, "AutoConfig finished");
+            }
+
+            @Override
+            public void autoConfigFailed() {
+                Log.i(TAG, "AutoConfig failed");
+                readerStatus.setText("AutoConfig failed -- device is not supported");
+            }
+        });
+
+        //This triggers the search, you should expect the results in the listener defined above
+        callbackContext.success();
+    }
+
     
   //You should populate this method as is you see fit.
   //Here we assume the name of a device and use it.

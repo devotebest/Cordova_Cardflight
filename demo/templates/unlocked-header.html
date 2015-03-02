@@ -1,0 +1,28 @@
+<div data-role="header" data-theme="a" class="megaheader">
+        <!-- A popup for navigation -->
+        <div data-role="popup" style="padding: 5px;" id="createUserHeaderPopup" data-theme="a">
+          <ul data-role="listview" data-inset="false" data-theme="a" data-divider-theme="c">
+            <li data-icon="home">
+            <a href="#disasterGrid" data-direction="reverse">Disasters</a>
+            </li>
+            <li data-icon="cloud">
+            <a href="#sync">Upload and Sync</a>
+            </li> -->
+            <li data-icon="gear">
+              <a href="#settings">Setup</a>
+            </li>
+            <li data-icon="info">
+              <a href="#about">About</a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Panel Link-->
+        <a href="#aboutHeaderPopup" class="headerNavButton ui-btn ui-icon-bars ui-btn-icon-notext ui-corner-all" data-rel="popup" data-transition="slidedown"></a>
+        <img src="css/kc-name-big.png" alt="Knowledge Center" class="kcheaderimg">
+        <img data-bind="visible: KC.core.root.seedImg, attr: {src: 'data:image/png;base64, ' + KC.core.root.seedImg()}" class="customer-image" alt="Secondary Image"/>
+      </div>
+
+      <div data-role="header" data-theme="b" class="subheader">
+        <h1>Create Local User</h1>
+      </div>

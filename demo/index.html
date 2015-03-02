@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cardflight Demo applicaton</title>
+    <meta charset="utf-8"/>
+    <meta name="format-detection" content="telephone=no"/>
+    <!-- WARNING: for iOS 7, remove the width=device-width and    height=device-height attributes. 
+	See  https://issues.apache.org/jira/browse/CB-4323 -->
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1"/>
+
+    <META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+    <META HTTP-EQUIV="Expires" CONTENT="-1">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="css/jquery.mobile-1.4.5.css">
+	<script src="js/jquery-1.11.2.min.js"></script>
+	<script src="js/jquery.mobile-1.4.5.min.js"></script>
+	<style>
+		#main .ui-content .ui-select{
+			margin:0px;
+		}
+		#main .weight .ui-input-text {
+			float: left;
+			width: 85px;
+			margin-left: 28px;
+		}
+		.line {
+			border: solid 1px grey;
+		}
+		.center {
+			text-align: center;
+		}
+		.blue1 {
+			background: rgb(14, 14, 124) !important;
+		}
+		.blue2 {
+			background: rgb(22, 73, 231) !important;
+		}
+		.red {
+			color: red;
+		}
+		.clear {
+			clear: both;
+		}
+		input  {
+			text-shadow: 0 0 0px !important;			
+		}
+		.btn {
+			text-shadow: 0 0 0px !important;
+			color: grey !important;
+			font-weight: normal !important;
+		}
+	</style>
+</head>
+<body>
+
+<!-- ######################### Input Page ########################### -->
+<div data-role="page" id="main" data-theme="a">
+    <!-- Header -->
+    <div data-role="header" data-position="fixed" style="height: 60px;">
+        <h1>Cardflight Demo</h1>
+    </div>
+    <!-- main content-->
+    <div role="main" class="ui-content" style="padding:0px;margin: 0px;">
+    	<div class="center">
+    		<h2>Shuttle Reader Demo</h2>
+    		<h4>Insert the Shuttle Reader to get started.</h4>
+    		<p class="line">
+    		<div style="width:60%;margin:auto;" class="center">
+    			<input type="text" readonly placeholder="Serial Number" class="blue1"/>
+    		</div>
+    		<p class="line">
+    	</div>
+    	<div class="center">
+    		<h4>Reader Commands</h4>
+    		<div>
+    			<div style="width: 40%;float:left">Status</div>
+    			<div id="status" class="red" style="width: 40%;float:left">Reader Not Connected</div>
+    		</div>
+    		<div class="clear">
+    		</div>	
+    		<a href="#" class="blue1 btn" style="width:60%;margin: auto" data-role="button">Run AutoConfig</a>
+    		<a href="#" class="blue1 btn" style="width:60%;margin: auto" data-role="button">Attempt Swipe</a>
+    		<p class="line">
+    	</div>
+    	<div class="center">
+    		<h4>Payment View</h4>
+    		<div style="width:80%;margin: auto">
+    			<input style="margin: auto"type="number"  placeholder="1234 5678 9012 3456" />
+    		</div>
+    		<div style="width:80%; margin:auto">
+    			<label for="zipcheck">Enable Zip Code</label>
+    			<input type="checkbox" id="zipcheck" checked />
+    			<a href="#" id="getzipBtn" class="blue2 btn" style="width:60%;margin: auto;color: white" data-role="button">Get Zip Code</a>
+    			<a href="#" class="blue2 btn" style="width:60%;margin: auto;color: white" data-role="button">Reset Fields</a>
+    		</div>
+    		<p class="line">
+    	</div>
+    	<div class="center">
+    		<h4>Card Information</h4>
+    		<div>
+    			<div style="width: 40%;float:left">Type:</div>
+    			<div id="type" style="width: 40%;float:left">Empty</div>
+    		</div>
+    		<div class="clear">
+    			<div style="width: 40%;float:left">Card Type:</div>
+    			<div id="cardtype" style="width: 40%;float:left">Empty</div>
+    		</div>
+    		<div class="clear">
+    			<div style="width: 40%;float:left">Last Four:</div>
+    			<div id="lastfour" style="width: 40%;float:left">Empty</div>
+    		</div>
+    		<div class="clear">
+    			<div style="width: 40%;float:left">Zip Code:</div>
+    			<div id="zipcode" style="width: 40%;float:left">Empty</div>
+    		</div>
+    		<p class="line">
+    	</div>
+    	<div class="center">
+    		<h4>Card commands</h4>
+    		<a href="#" class="blue1 btn" style="width:60%;margin: auto;color: white" data-role="button">Tokenize</a>
+    		<p class="line">
+    	</div>
+    	<div class="center">
+    		<h4>Charge Information</h4>
+    		<div>
+    			<div style="width: 40%;float:left">Token:</div>
+    			<div id="token" style="width: 40%;float:left">Empty</div>
+    		</div>
+    		<div class="clear">
+    			<div style="width: 40%;float:left">Amount:</div>
+    			<div id="amout" style="width: 40%;float:left">$</div>
+    		</div>
+    		<h4>Status</h4>
+    		<div class="clear">
+    			<div style="width: 40%;float:left">Captured:</div>
+    			<div id="captured" style="width: 40%;float:left">Empty</div>
+    		</div>
+    		<div class="clear">
+    			<div style="width: 40%;float:left">Voided:</div>
+    			<div id="voided" style="width: 40%;float:left">Empty</div>
+    		</div>
+    		<div class="clear">
+    			<div style="width: 40%;float:left">Refunded:</div>
+    			<div id="refunded" style="width: 40%;float:left">Empty</div>
+    		</div>
+    		<p class="line">
+    	</div>
+	</div>
+</div>
+<script>
+	$("#zipcheck").change(function(){
+		bchecked = $(this).prop("checked");
+		if(bchecked == true){
+			$("#getzipBtn").fadeIn();
+		}else{
+			$("#getzipBtn").fadeOut();
+		}
+	});
+</script>
+
+</body>
+</html>
